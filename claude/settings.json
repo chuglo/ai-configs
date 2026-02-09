@@ -94,6 +94,32 @@
         "description": "Detect PR creation from gh CLI output"
       }
     ],
+    "PostToolUseFailure": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/track-error.sh",
+            "timeout": 10
+          }
+        ],
+        "description": "Track tool failures for session notes context"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/log-prompt.sh",
+            "timeout": 5
+          }
+        ],
+        "description": "Log user prompts and slash commands for session context"
+      }
+    ],
     "Stop": [
       {
         "matcher": ".*",

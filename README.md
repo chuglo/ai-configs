@@ -182,6 +182,8 @@ Both tools have equivalent hook functionality. OpenCode uses a JS plugin; Claude
 | **Desktop notification** — Notify on task completion | `event` (session.idle) | `Notification` → inline notify-send |
 | **Session continuity** — Point to previous session notes | `event` (session.created) | `SessionStart` → `session-start.sh` |
 | **Environment setup** — Persist PROJECT_DIR, GO_MODULE, GIT_BRANCH | N/A (JS state) | `SessionStart` → `session-start.sh` (CLAUDE_ENV_FILE) |
+| **Error tracking** — Record tool failures for session notes | `tool.execute.after` | `PostToolUseFailure` → `track-error.sh` |
+| **Prompt logging** — Track prompt count and slash commands | `event` (command) | `UserPromptSubmit` → `log-prompt.sh` |
 | **Session notes on compaction** — Rich context injection | `experimental.session.compacting` | `PreCompact` → `session-notes.sh` |
 | **DocWatch** — Detect architecture-relevant edits | `event` (session.idle) | `PreToolUse` → `track-activity.sh` |
 
@@ -189,10 +191,12 @@ Both tools have equivalent hook functionality. OpenCode uses a JS plugin; Claude
 
 | Script | Hook Type | Purpose |
 |---|---|---|
-| `protect-generated.sh` | PreToolUse (Edit/Write) | Block sqlc edits (exit 2), warn on shadcn/ui |
-| `git-push-review.sh` | PreToolUse (Bash + git push) | Remind to review diff before pushing |
-| `track-activity.sh` | PreToolUse (*) | Track tool calls, files, suggest compaction |
+| `protect-generated.sh` | PreToolUse (Edit/Write/MultiEdit) | Block sqlc edits (exit 2), warn on shadcn/ui |
+| `git-push-review.sh` | PreToolUse (Bash) | Remind to review diff before pushing |
+| `track-activity.sh` | PreToolUse (*) | Track tool calls, files, suggest compaction (session_id scoped) |
 | `post-bash.sh` | PostToolUse (Bash) | Detect PR creation from gh CLI output |
+| `track-error.sh` | PostToolUseFailure (*) | Track tool failures for session notes |
+| `log-prompt.sh` | UserPromptSubmit (*) | Log prompt count and slash commands |
 | `stop-audit.sh` | Stop (*) | Audit console.log in edited TS/JS files |
 | `session-start.sh` | SessionStart (*) | Persist env vars (CLAUDE_ENV_FILE), check for previous session notes |
 | `session-notes.sh` | PreCompact (*) | Write session notes, inject compaction context |

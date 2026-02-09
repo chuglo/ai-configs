@@ -2,39 +2,36 @@
 # Track tool call count and suggest strategic compaction.
 # Also tracks edited files for session notes.
 #
-# PreToolUse hook (matcher: *). Runs on every tool call.
-# Uses a session-scoped temp file for state.
+# PreToolUse hook (matcher: .*). Runs on every tool call.
+# Uses session_id from Claude Code input to scope state per-session.
 #
 # Stderr messages are shown to the agent.
+#
+# Input (stdin JSON):
+#   { "session_id": "abc123", "tool_name": "Edit", "tool_input": { "file_path": "..." } }
 
 set -e
 
-# Session-scoped state file (keyed by Claude session via parent PID tree)
-# Falls back to a daily file if session detection fails
 PROJECT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 STATE_DIR="$PROJECT_DIR/.claude/sessions/.state"
 mkdir -p "$STATE_DIR"
 
-# Use a daily state file (Claude Code doesn't expose session IDs to hooks)
-STATE_FILE="$STATE_DIR/activity-$(date +%Y%m%d).json"
-
 INPUT=$(cat)
 
-# Extract tool info
-TOOL_NAME=$(echo "$INPUT" | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-print(data.get('tool_name', data.get('tool', 'unknown')))
-" 2>/dev/null || echo "unknown")
+# Extract session_id and tool info using jq
+SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty' 2>/dev/null || echo "")
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // "unknown"' 2>/dev/null || echo "unknown")
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.command // empty' 2>/dev/null || echo "")
 
-FILE_PATH=$(echo "$INPUT" | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-ti = data.get('tool_input', {})
-print(ti.get('file_path', ti.get('filePath', ti.get('command', ''))))
-" 2>/dev/null || echo "")
+# Use session_id for state file if available, fall back to daily
+if [ -n "$SESSION_ID" ]; then
+  # Use first 12 chars of session_id for filename
+  STATE_FILE="$STATE_DIR/activity-${SESSION_ID:0:12}.json"
+else
+  STATE_FILE="$STATE_DIR/activity-$(date +%Y%m%d).json"
+fi
 
-# Update state
+# Update state with Python (jq can't easily do read-modify-write on files)
 python3 << PYEOF
 import json, os, sys
 from datetime import datetime
@@ -57,8 +54,8 @@ if not state.get("start"):
 
 state["count"] = state.get("count", 0) + 1
 
-# Track edited files
-if tool in ("Edit", "Write", "edit", "write") and file_path:
+# Track edited files (Edit, Write, and MultiEdit)
+if tool in ("Edit", "Write", "MultiEdit") and file_path:
     if file_path.endswith(".go") and file_path not in state.get("go_files", []):
         state.setdefault("go_files", []).append(file_path)
     if any(file_path.endswith(ext) for ext in (".ts", ".tsx", ".js", ".jsx")):

@@ -1,24 +1,19 @@
 #!/bin/bash
 # Block edits to sqlc generated files and warn on shadcn/ui edits.
 #
-# PreToolUse hook for Edit/Write tools.
-# Exit code 2 = block the tool call.
-# Stderr messages are shown to the agent.
+# PreToolUse hook for Edit/Write/MultiEdit tools.
+# Exit code 2 = block the tool call (stderr fed back to Claude).
+# Exit code 0 = allow the tool call.
 #
-# Claude Code passes hook context as JSON on stdin:
+# Input (stdin JSON):
 #   { "tool_name": "Edit", "tool_input": { "file_path": "..." } }
 
 set -e
 
 INPUT=$(cat)
 
-# Extract file_path from tool_input
-FILE_PATH=$(echo "$INPUT" | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-ti = data.get('tool_input', {})
-print(ti.get('file_path', ti.get('filePath', '')))
-" 2>/dev/null || echo "")
+# Extract file_path from tool_input (Claude Code uses snake_case: file_path)
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null || echo "")
 
 if [ -z "$FILE_PATH" ]; then
   exit 0

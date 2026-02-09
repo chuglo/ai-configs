@@ -13,8 +13,13 @@ TRIGGER="${1:-manual}"
 PROJECT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 SESSIONS_DIR="$PROJECT_DIR/.claude/sessions"
 STATE_DIR="$SESSIONS_DIR/.state"
-STATE_FILE="$STATE_DIR/activity-$(date +%Y%m%d).json"
 MAX_SESSION_FILES=10
+
+# Find the most recent state file (could be session-scoped or daily)
+STATE_FILE=$(ls -t "$STATE_DIR"/activity-*.json 2>/dev/null | head -1 || echo "")
+if [ -z "$STATE_FILE" ]; then
+  STATE_FILE="$STATE_DIR/activity-$(date +%Y%m%d).json"
+fi
 
 mkdir -p "$SESSIONS_DIR"
 
@@ -46,7 +51,7 @@ git_stash = os.environ.get("GIT_STASH", "")
 max_files = int(os.environ.get("MAX_SESSION_FILES", "10"))
 
 # Load state
-state = {"count": 0, "go_files": [], "ts_files": [], "start": "", "doc_edits": []}
+state = {"count": 0, "go_files": [], "ts_files": [], "start": "", "doc_edits": [], "errors": [], "prompts": 0, "slash_commands": []}
 if state_file and os.path.exists(state_file):
     try:
         with open(state_file) as f:
@@ -58,6 +63,9 @@ count = state.get("count", 0)
 go_files = state.get("go_files", [])
 ts_files = state.get("ts_files", [])
 doc_edits = state.get("doc_edits", [])
+errors = state.get("errors", [])
+prompts = state.get("prompts", 0)
+slash_commands = state.get("slash_commands", [])
 start_time = state.get("start", "")
 
 # Calculate duration
@@ -108,10 +116,22 @@ if doc_edits:
     rel_docs = [f.replace(project_dir + "/", "") for f in doc_edits]
     doc_section = f"\n### Documentation Watch\nArchitecture-relevant files were edited:\n" + "\n".join(f"- `{f}`" for f in rel_docs) + "\nRun `/update-docs` to sync documentation.\n"
 
+# Errors section
+error_section = ""
+if errors:
+    error_section = "\n### Errors Encountered\n" + "\n".join(
+        f"- `{e.get('time', '?')}` [{e.get('tool', '?')}] {e.get('error', '?')}" for e in errors
+    ) + "\n"
+
+# Slash commands section
+slash_section = ""
+if slash_commands:
+    slash_section = "\n### Slash Commands Used\n" + "\n".join(f"- `{c}`" for c in slash_commands) + "\n"
+
 # Build notes
 notes = f"""# Session Notes — {timestamp.replace("_", " ")}
 
-> Auto-generated on **{trigger}** | {duration} session | {count} tool calls | {len(go_files)} Go, {len(ts_files)} TS/JS files edited
+> Auto-generated on **{trigger}** | {duration} session | {count} tool calls | {prompts} prompts | {len(go_files)} Go, {len(ts_files)} TS/JS files edited
 
 ## Current State
 - **Branch**: `{branch}`
@@ -133,7 +153,7 @@ notes = f"""# Session Notes — {timestamp.replace("_", " ")}
 ```
 {git_diff_stat}
 ```
-{doc_section}
+{doc_section}{error_section}{slash_section}
 ---
 
 *For richer notes with conversation context and decisions, run `/session-notes` manually before ending a session.*
@@ -176,7 +196,7 @@ if trigger == "compaction":
 
 ### Files Edited
 {edited_section}
-{doc_section}
+{doc_section}{error_section}{slash_section}
 **IMPORTANT**: After compaction, read the latest file in `.claude/sessions/` for full session context.
 """)
 

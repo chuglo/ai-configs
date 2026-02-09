@@ -3,17 +3,15 @@
 #
 # PreToolUse hook for Bash tool when command contains "git push".
 # Stderr messages are shown to the agent.
+#
+# Input (stdin JSON):
+#   { "tool_name": "Bash", "tool_input": { "command": "git push ..." } }
 
 set -e
 
 INPUT=$(cat)
 
-COMMAND=$(echo "$INPUT" | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-ti = data.get('tool_input', {})
-print(ti.get('command', ''))
-" 2>/dev/null || echo "")
+COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null || echo "")
 
 if echo "$COMMAND" | grep -q "git push"; then
   echo "[Hook] Review before push: git diff origin/main...HEAD" >&2

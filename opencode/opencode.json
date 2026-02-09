@@ -134,6 +134,12 @@
     "review-battle": {
       "description": "Dispatch competing code reviewers, then grade them",
       "template": "{file:commands/review-battle.md}\n\n$ARGUMENTS"
+    },
+    "threat-model": {
+      "description": "Perform threat modeling (STRIDE, DFDs, attack trees, risk rating)",
+      "template": "{file:commands/threat-model.md}\n\n$ARGUMENTS",
+      "agent": "threat-modeler",
+      "subtask": true
     }
   },
   "agent": {

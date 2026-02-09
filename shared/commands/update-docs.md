@@ -21,16 +21,19 @@ Also check for any other `*.md` files in `docs/` that may have been added.
 
 1. Check `git diff --name-only` and `git log --oneline -10` to identify what changed
 2. If a DocWatch alert is present (plugin detected architecture-relevant edits), use that as your starting point for which areas to focus on
-3. For each doc, scan its headings to understand what it covers
-4. Match changed source files against doc content to find stale or missing sections
-5. Update ONLY the affected sections across ALL relevant docs -- examples:
+3. If a DecisionWatch alert is present (plugin detected decision-like language), prioritize capturing those decisions with rationale
+4. For each doc, scan its headings to understand what it covers
+5. Match changed source files against doc content to find stale or missing sections
+6. Update ONLY the affected sections across ALL relevant docs -- examples:
    - **Code changes** (handlers, domain, middleware) -> ARCHITECTURE.md
    - **Feature completion** (new migration, handler, tests passing) -> ROADMAP.md phase checklists
+   - **Feature deferral/promotion** -> ROADMAP.md (add rationale inline)
+   - **Architecture decisions** -> ARCHITECTURE.md (relevant section or "Key Decisions")
    - **Workflow changes** (new agent, command, skill) -> INSTRUCTIONS.md tables
    - **Setup changes** (new env var, Docker change) -> README.md + ARCHITECTURE.md deployment
-6. Verify accuracy: file paths exist, code examples match, endpoints match routes
-7. Update `**Last Updated:** YYYY-MM-DD` timestamps on modified docs
-8. Show the user a summary of what was changed and why, per doc
+7. Verify accuracy: file paths exist, code examples match, endpoints match routes
+8. Update `**Last Updated:** YYYY-MM-DD` timestamps on modified docs
+9. Show the user a summary of what was changed and why, per doc
 
 ## When to Update
 
@@ -43,4 +46,6 @@ Also check for any other `*.md` files in `docs/` that may have been added.
 - Build/dev workflow changes
 - New agents, commands, or skills added
 - Feature milestone completed (update ROADMAP.md phase status)
-- Architectural decisions made during session
+- Feature deferred or promoted between phases (capture rationale)
+- Architectural decisions made during session (capture the "why")
+- Scope changes (features added, removed, or redefined)

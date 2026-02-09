@@ -303,6 +303,7 @@ npx vitest             # watch mode
 | E2E testing | `/e2e` |
 | Dead code cleanup | `/refactor-clean` |
 | Documentation | `/update-docs` |
+| Project status overview | `/status` |
 | Database migrations | `/migrate` |
 | Cross-stack orchestration | `/orchestrate` |
 | Test coverage analysis | `/test-coverage` |

@@ -14,6 +14,7 @@
  *   - Rich context injection into compaction summaries
  *   - Session continuity hints on session start
  *   - DocWatch: detect architecture-relevant file edits and nudge for doc updates
+ *   - DecisionWatch: detect project decisions (deferrals, promotions, arch choices) and nudge for doc updates
  *
  * NOTE: Auto session notes on idle are intentionally disabled. The manual
  * `/session-notes` command produces far richer notes with conversation context
@@ -21,7 +22,7 @@
  */
 
 export const plugin = async ({ client, $, worktree }) => {
-  console.log("[PROJECT-HOOKS] Plugin loaded (sqlc protection, strategic compact, rich session notes, DocWatch)")
+  console.log("[PROJECT-HOOKS] Plugin loaded (sqlc protection, strategic compact, rich session notes, DocWatch, DecisionWatch)")
 
   // ---------------------------------------------------------------------------
   // Session state tracking
@@ -89,6 +90,51 @@ export const plugin = async ({ client, $, worktree }) => {
   // Slash commands executed
   const slashCommands = []
 
+  // ---------------------------------------------------------------------------
+  // DecisionWatch — detect project decisions in conversation activity
+  // ---------------------------------------------------------------------------
+
+  const decisionsDetected = []
+  const MAX_DECISIONS = 20
+
+  // Patterns that suggest a project-level decision was made.
+  // Matched against todo content, bash descriptions, and activity summaries.
+  const DECISION_PATTERNS = [
+    /\bdefer(?:red|ring)?\b/i,
+    /\bpromot(?:ed|ing|e)\b/i,
+    /\bmov(?:ed|ing|e)\s+(?:to|from)\s+phase\b/i,
+    /\bdecid(?:ed|ing|e)\s+(?:to|against|not\s+to)\b/i,
+    /\binstead\s+of\b/i,
+    /\bswitch(?:ed|ing)?\s+(?:to|from)\b/i,
+    /\breplac(?:ed|ing|e)\s+(?:with|by)\b/i,
+    /\bdrop(?:ped|ping)?\s+(?:the|this|that)?\s*(?:feature|requirement|approach)\b/i,
+    /\bchose\b|\bchoose\b|\bchosen\b/i,
+    /\barchitectur(?:al|e)\s+decision\b/i,
+    /\btrade-?off\b/i,
+    /\bout\s+of\s+scope\b/i,
+    /\bwon't\s+(?:do|implement|build|add)\b/i,
+    /\bphase\s+\d/i,
+    /\bprioritiz(?:ed|ing|e)\b/i,
+    /\bde-?prioritiz(?:ed|ing|e)\b/i,
+  ]
+
+  function checkForDecision(text, source) {
+    if (!text || text.length < 10) return
+    for (const pattern of DECISION_PATTERNS) {
+      if (pattern.test(text)) {
+        decisionsDetected.push({
+          time: new Date().toISOString().slice(11, 19),
+          source,
+          text: String(text).slice(0, 200),
+        })
+        if (decisionsDetected.length > MAX_DECISIONS) {
+          decisionsDetected.shift()
+        }
+        return // one match per text is enough
+      }
+    }
+  }
+
   // Session timing
   let sessionStartTime = null
 
@@ -109,6 +155,9 @@ export const plugin = async ({ client, $, worktree }) => {
     if (activityLog.length > MAX_ACTIVITY_LOG) {
       activityLog.shift()
     }
+
+    // DecisionWatch: check activity summaries for decision-like language
+    checkForDecision(summary, type)
   }
 
   function trackError(context, message) {
@@ -284,6 +333,11 @@ export const plugin = async ({ client, $, worktree }) => {
       ? `\n### Slash Commands Used\n${slashCommands.map((c) => `- \`${c}\``).join("\n")}\n`
       : ""
 
+    // Decisions detected
+    const decisionSection = decisionsDetected.length > 0
+      ? `\n### Decisions Detected\n${decisionsDetected.map((d) => `- \`${d.time}\` [${d.source}] ${d.text}`).join("\n")}\n`
+      : ""
+
     // Activity timeline (last 30 entries for readability)
     const recentActivity = activityLog.slice(-30)
     const activitySection = recentActivity.length > 0
@@ -317,7 +371,7 @@ ${git.log}
 \`\`\`
 ${git.diffStat}
 \`\`\`
-${bashSection}${errorSection}${slashSection}${activitySection}
+${bashSection}${errorSection}${decisionSection}${slashSection}${activitySection}
 ---
 
 *For richer notes with conversation context and decisions, run \`/session-notes\` manually before ending a session.*
@@ -405,6 +459,7 @@ ${bashSection}${errorSection}${slashSection}${activitySection}
         bashCommands.length = 0
         slashCommands.length = 0
         docRelevantEdits.clear()
+        decisionsDetected.length = 0
         sessionStartTime = Date.now()
 
         // Point the agent to the latest session notes for continuity
@@ -445,6 +500,12 @@ ${bashSection}${errorSection}${slashSection}${activitySection}
           console.log(`[PROJECT-HOOKS] [DocWatch] Edited: ${dirs} — consider /update-docs`)
         }
 
+        // DecisionWatch: nudge if project decisions were detected in this session
+        if (decisionsDetected.length > 0) {
+          const unique = [...new Set(decisionsDetected.map(d => d.source))]
+          console.log(`[PROJECT-HOOKS] [DecisionWatch] ${decisionsDetected.length} decision(s) detected (from: ${unique.join(', ')}) — consider /update-docs to capture rationale in ROADMAP.md`)
+        }
+
         // Desktop notification (Linux)
         try {
           await $`notify-send "OpenCode" "Task completed!" 2>/dev/null`
@@ -470,6 +531,7 @@ ${bashSection}${errorSection}${slashSection}${activitySection}
         bashCommands.length = 0
         slashCommands.length = 0
         docRelevantEdits.clear()
+        decisionsDetected.length = 0
         sessionStartTime = null
       }
 
@@ -503,6 +565,11 @@ ${bashSection}${errorSection}${slashSection}${activitySection}
         const total = todos.length
         if (total > 0) {
           console.log(`[PROJECT-HOOKS] Progress: ${completed}/${total} tasks completed`)
+        }
+
+        // DecisionWatch: scan todo content for decision-like language
+        for (const todo of todos) {
+          checkForDecision(todo.content, "todo")
         }
       }
     },
@@ -616,6 +683,11 @@ ${docRelevantEdits.size > 0
         .map(([dir, files]) => `- **${dir}/**: ${[...files].map(f => '`' + f + '`').join(', ')}`)
         .join('\n')
     }\nRun \`/update-docs\` or ask the agent to update affected documentation.\n`
+  : ''}
+${decisionsDetected.length > 0
+  ? `### Decisions Detected\nProject-level decisions were made during this session. Ensure these are captured in ROADMAP.md or relevant docs:\n${
+      decisionsDetected.map(d => `- [${d.source}] ${d.text}`).join('\n')
+    }\nRun \`/update-docs\` to capture decision rationale.\n`
   : ''}
 ${previousNotesHint}
 ### Session Notes File

@@ -95,6 +95,35 @@ and why. Example:
 > **docs/ROADMAP.md** -- Phase 1.1: marked "RBAC domain logic" as complete since
 > the developer role is now implemented and tested
 
+## DecisionWatch Integration
+
+When invoked after a DecisionWatch alert (the plugin detected decision-like
+language during the session), you will see context about what decisions were
+detected. Use this to capture decision rationale in documentation:
+
+1. Read the DecisionWatch context to identify what decisions were made
+2. Read session notes (`.opencode/sessions/`) for additional context
+3. For each decision, determine which doc should capture it:
+   - **Feature deferral/promotion** -> ROADMAP.md (update phase items, add rationale)
+   - **Architecture choice** -> ARCHITECTURE.md (add to relevant section or "Key Decisions")
+   - **Workflow change** -> INSTRUCTIONS.md (update tables, add notes)
+   - **Scope change** -> ROADMAP.md (update feature tables, exit criteria)
+4. Capture the **decision** AND the **rationale** (the "why", not just the "what")
+5. Use inline annotations in ROADMAP.md for deferrals/promotions:
+   - `~~Feature X~~ **DEFERRED to Phase 2:** <rationale>`
+   - `**PROMOTED from Phase 2:** <rationale>`
+
+### ROADMAP.md Phase Tracking
+
+Pay special attention to ROADMAP.md phase status. When updating:
+
+- Check if all items in a phase are complete -> mark phase as COMPLETE with date
+- Check if items were moved between phases -> add deferral/promotion notes
+- Check if exit criteria are now met -> update exit criteria checklist
+- Check if new items were added to a phase -> add them with context
+- Look for discrepancies between git log (what was actually built) and ROADMAP.md
+  (what it says was built) -> fix any drift
+
 ## Gap Detection
 
 If the changes represent a significant new feature or architectural decision

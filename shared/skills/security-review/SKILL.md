@@ -1,6 +1,6 @@
 ---
 name: security-review
-description: Security checklist for {{PROJECT_NAME}}. Multi-tenant isolation, auth, input validation, OWASP Top 10, file uploads, logging security. Use when implementing auth, handling user input, creating API endpoints, modifying multi-tenant queries, or reviewing code for security.
+description: Security review checklist with OWASP Top 10 2025, ASVS 5.0, and PortSwigger vulnerability class mappings. Multi-tenant isolation, auth, input validation, injection, file uploads, frontend security, logging. Use when implementing auth, handling user input, creating API endpoints, modifying multi-tenant queries, or reviewing code for security.
 allowed-tools: Read Grep Glob
 compatibility: Go 1.25+, Next.js 16, PostgreSQL 16+
 ---
@@ -15,10 +15,27 @@ compatibility: Go 1.25+, Next.js 16, PostgreSQL 16+
 - Working with external communication (email, webhooks)
 - Modifying multi-tenant queries
 - Changing session or token handling
+- Configuring security headers or CORS
+- Reviewing frontend code for XSS or DOM vulnerabilities
+
+## Reference Files
+
+This skill includes detailed reference material in the `references/` directory:
+
+| Reference | Contents |
+|---|---|
+| `references/owasp-top10-2025.md` | OWASP Top 10:2025 — risk descriptions, manifestations, prevention, ASVS cross-mapping |
+| `references/asvs-checklist.md` | OWASP ASVS 5.0 condensed L1+L2 verification checklist (346 requirements → actionable subset) |
+| `references/vulnerability-classes.md` | PortSwigger Web Academy vulnerability taxonomy — attack patterns, detection, prevention for 20+ vuln classes |
+| `references/frontend-security.md` | Browser security mechanisms — SOP, CSP, CORS, cookies, security headers, DOM security, CSRF defense |
+
+Load the relevant reference file when reviewing code in that area. The checklist below provides the quick-scan items; the references provide depth.
 
 ## Security Checklist
 
 ### 1. Multi-Tenant Isolation (CRITICAL)
+
+> OWASP: A01 (Broken Access Control) · ASVS: V8.2 (Application-Level Authorization) · PortSwigger: Access Control, IDOR
 
 ```go
 // REQUIRED: org_id from session context
@@ -40,6 +57,9 @@ orgID := r.URL.Query().Get("org_id")              // NEVER
 - [ ] Use composite lookups: `WHERE id = $1 AND organization_id = $2`
 
 ### 2. Authentication
+
+> OWASP: A07 (Authentication Failures) · ASVS: V6 (Authentication), V7 (Session Management) · PortSwigger: Authentication, OAuth, JWT Attacks
+> See also: `references/vulnerability-classes.md` §3 (Authentication), §11.3 (JWT), §11.4 (OAuth)
 
 **Auth Tokens (passwordless, reset, invite)**
 - [ ] Token generated with `crypto/rand` (not `math/rand` or `math/rand/v2`)
@@ -77,6 +97,8 @@ http.SetCookie(w, &http.Cookie{
 - [ ] Never allow `{"alg":"none"}` (unsigned JWTs)
 
 ### 3. Cryptography
+
+> OWASP: A04 (Cryptographic Failures) · ASVS: V11 (Cryptography), V12 (Secure Communication)
 
 **Use `crypto/rand`, Never `math/rand`**
 ```go
@@ -116,6 +138,9 @@ Use `crypto/subtle.ConstantTimeCompare` for comparing tokens, hashes, HMACs, and
 
 ### 4. Input Validation
 
+> OWASP: A05 (Injection), A03 (Supply Chain) · ASVS: V1 (Encoding and Sanitization), V2 (Validation and Business Logic)
+> See also: `references/vulnerability-classes.md` §1 (Injection Attacks)
+
 **Request Body Size Limits**
 ```go
 // REQUIRED: limit request body size on all endpoints
@@ -149,6 +174,9 @@ json.NewDecoder(r.Body).Decode(&req)
 
 ### 5. SQL Injection Prevention
 
+> OWASP: A05 (Injection) · ASVS: V1.2 (Injection Prevention) · PortSwigger: SQL Injection (18 labs), NoSQL Injection
+> See also: `references/vulnerability-classes.md` §1.1 (SQLi — in-band, blind, second-order, out-of-band variants)
+
 ```go
 // CORRECT: parameterized queries via sqlc
 // name: GetUserByEmail :one
@@ -166,6 +194,9 @@ var allowedSortColumns = map[string]string{
 ```
 
 ### 6. File Uploads
+
+> OWASP: A01 (Broken Access Control), A05 (Injection) · ASVS: V5 (File Handling) · PortSwigger: File Upload Vulnerabilities
+> See also: `references/vulnerability-classes.md` §7 (File Upload — web shells, polyglots, zip slip, pixel flood)
 
 ```go
 func (h *Handler) UploadAttachment(w http.ResponseWriter, r *http.Request) {
@@ -217,6 +248,9 @@ func (h *Handler) UploadAttachment(w http.ResponseWriter, r *http.Request) {
 
 ### 7. API Security
 
+> OWASP: A02 (Security Misconfiguration), A01 (Broken Access Control) · ASVS: V3 (Web Frontend Security), V4 (API and Web Service)
+> See also: `references/frontend-security.md` (CSP, CORS, cookies, security headers), `references/vulnerability-classes.md` §6 (CSRF), §11.5 (API-Specific)
+
 **HTTP Security Headers**
 ```go
 func securityHeaders(next http.Handler) http.Handler {
@@ -259,6 +293,8 @@ srv := &http.Server{
 
 ### 8. Error Handling and Information Leakage
 
+> OWASP: A10 (Mishandling of Exceptional Conditions) · ASVS: V16 (Security Logging and Error Handling) · PortSwigger: Information Disclosure
+
 ```go
 // CORRECT: generic error to client, detailed log internally
 if err != nil {
@@ -278,6 +314,8 @@ http.Error(w, fmt.Sprintf("query failed: %v", err), 500)
 - [ ] Use consistent error response format
 
 ### 9. Logging Security
+
+> OWASP: A09 (Security Logging and Alerting Failures) · ASVS: V16 (Security Logging and Error Handling), V14 (Data Protection)
 
 **Never Log Sensitive Data**
 ```go
@@ -312,6 +350,8 @@ log.Info().Str("event", "rbac_change").Str("target_user", uid).Msg("role changed
 
 ### 10. Audit Logging
 
+> OWASP: A09 (Security Logging and Alerting Failures) · ASVS: V16.1 (Logging)
+
 - [ ] All state-changing actions logged (structured audit events)
 - [ ] Audit events are append-only
 - [ ] No sensitive data in audit events (no passwords, tokens)
@@ -319,12 +359,16 @@ log.Info().Str("event", "rbac_change").Str("target_user", uid).Msg("role changed
 
 ### 11. No Secrets in Code
 
+> OWASP: A02 (Security Misconfiguration) · ASVS: V13 (Configuration), V14 (Data Protection)
+
 - [ ] No hardcoded API keys, passwords, tokens
 - [ ] All secrets in environment variables
 - [ ] .env files in .gitignore
 - [ ] No secrets in git history
 
 ### 12. Dependency Security
+
+> OWASP: A03 (Software Supply Chain Failures) · ASVS: V13.2 (Dependency Management)
 
 ```bash
 # Basic source scan
@@ -348,6 +392,9 @@ cd web && npm audit
 
 ### 13. Race Detector as Security Tool
 
+> OWASP: A06 (Insecure Design) · ASVS: V15.2 (Concurrency) · PortSwigger: Race Conditions
+> See also: `references/vulnerability-classes.md` §8 (Race Conditions — limit overrun, TOCTOU, partial construction, single-packet attack)
+
 The `-race` flag catches TOCTOU (time-of-check-time-of-use) bugs in auth checks, which are direct security vulnerabilities — not just correctness issues.
 
 ```bash
@@ -356,6 +403,8 @@ go test -race ./...
 ```
 
 ### 14. Fuzzing Security-Critical Code
+
+> ASVS: V2.2 (Input Validation) · Targets: A05 (Injection), A10 (Exceptional Conditions)
 
 Use Go's built-in fuzzing for validators, parsers, and sanitizers that process untrusted input:
 
@@ -380,6 +429,51 @@ func FuzzValidateTitle(f *testing.F) {
 ```
 
 Run with: `go test -fuzz=FuzzValidateTitle -fuzztime=30s`
+
+### 15. Frontend and XSS Prevention
+
+> OWASP: A05 (Injection — XSS), A01 (Broken Access Control — CORS, clickjacking) · ASVS: V3 (Web Frontend Security)
+> See also: `references/frontend-security.md` (full CSP, CORS, cookie, DOM security reference), `references/vulnerability-classes.md` §2 (XSS — reflected, stored, DOM-based)
+
+**XSS Prevention**
+- [ ] No use of `dangerouslySetInnerHTML` (React) or `innerHTML` without sanitization
+- [ ] User content rendered via safe APIs (`textContent`, `createTextNode`)
+- [ ] Framework auto-escaping relied upon (React JSX, Go `html/template`)
+- [ ] Content Security Policy deployed (at minimum: `object-src 'none'`, `base-uri 'none'`)
+- [ ] SVG uploads sanitized (no `<script>`, no `foreignObject`)
+- [ ] Markdown/user HTML sanitized with a well-known library before storage
+
+**CORS**
+- [ ] `Access-Control-Allow-Origin` is a fixed value or validated against an allowlist
+- [ ] Never `Access-Control-Allow-Origin: *` with `Access-Control-Allow-Credentials: true`
+- [ ] `null` origin never allowed
+
+**CSRF**
+- [ ] Anti-CSRF tokens on all state-changing requests, OR
+- [ ] Custom headers required (triggers CORS preflight, blocking cross-origin POST)
+- [ ] `SameSite=Lax` (minimum) on session cookies
+- [ ] State-changing operations use POST/PUT/DELETE (never GET)
+
+**Cookies**
+- [ ] Session cookies: `Secure`, `HttpOnly`, `SameSite=Lax`
+- [ ] `__Host-` prefix used for session cookies where possible
+- [ ] Session values never exposed in response body, URL, or JavaScript
+
+**Open Redirects**
+- [ ] Redirect destinations validated against allowlist
+- [ ] No user-controlled absolute URLs in redirects without validation
+
+### 16. Server-Side Request Forgery (SSRF)
+
+> OWASP: A05 (Injection) · ASVS: V1.3.6 (Sanitization — SSRF) · PortSwigger: SSRF
+> See also: `references/vulnerability-classes.md` §5 (SSRF — internal services, cloud metadata, bypass techniques)
+
+- [ ] All user-supplied URLs validated against allowlist of protocols, domains, and ports
+- [ ] Only `https://` scheme allowed for outbound requests (disable `file://`, `gopher://`, etc.)
+- [ ] Cloud metadata endpoints blocked (`169.254.169.254`, `metadata.google.internal`)
+- [ ] DNS resolution not trusted for validation (DNS rebinding possible)
+- [ ] Network segmentation: application servers cannot reach internal admin interfaces directly
+- [ ] Webhook URLs validated before use
 
 ## Go-Specific Security Anti-Patterns
 

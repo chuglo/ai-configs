@@ -1,52 +1,81 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "Bash(go build*)",
       "Bash(go test*)",
+      "Bash(go vet*)",
       "Bash(golangci-lint*)",
       "Bash(gitleaks*)",
       "Bash(sqlc generate*)",
+      "Bash(sqlc compile*)",
+      "Bash(goose*)",
+      "Bash(make *)",
       "Bash(npm run build*)",
+      "Bash(npm run lint*)",
+      "Bash(npm run test*)",
+      "Bash(npm install*)",
       "Bash(npx eslint*)",
       "Bash(npx vitest*)",
+      "Bash(npx tsc*)",
+      "Bash(npx playwright*)",
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
       "Bash(git branch*)",
       "Bash(git stash list*)",
+      "Bash(git show*)",
+      "Bash(gh *)",
       "Bash(docker logs*)",
-      "Bash(ls*)"
+      "Bash(docker compose*)",
+      "Bash(ls*)",
+      "Bash(cat*)",
+      "Bash(wc*)",
+      "Bash(find*)",
+      "Bash(grep*)",
+      "Bash(head*)",
+      "Bash(tail*)"
     ],
-    "deny": []
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(.env.local)",
+      "Read(./secrets/**)",
+      "Read(./**/credentials*)",
+      "Read(.claude/sessions/.state/*)"
+    ]
   },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "tool == \"Edit\" || tool == \"Write\"",
+        "matcher": "Edit|Write|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/protect-generated.sh"
+            "command": ".claude/hooks/protect-generated.sh",
+            "timeout": 10
           }
         ],
         "description": "Block edits to sqlc generated files, warn on shadcn/ui edits"
       },
       {
-        "matcher": "tool == \"Bash\" && tool_input.command matches \"git push\"",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/git-push-review.sh"
+            "command": ".claude/hooks/git-push-review.sh",
+            "timeout": 5
           }
         ],
         "description": "Remind to review changes before git push"
       },
       {
-        "matcher": "*",
+        "matcher": ".*",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/track-activity.sh"
+            "command": ".claude/hooks/track-activity.sh",
+            "timeout": 15
           }
         ],
         "description": "Track tool calls, edited files, and suggest strategic compaction"
@@ -54,11 +83,12 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "tool == \"Bash\"",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/post-bash.sh"
+            "command": ".claude/hooks/post-bash.sh",
+            "timeout": 10
           }
         ],
         "description": "Detect PR creation from gh CLI output"
@@ -66,38 +96,65 @@
     ],
     "Stop": [
       {
-        "matcher": "*",
+        "matcher": ".*",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/stop-audit.sh"
+            "command": ".claude/hooks/stop-audit.sh",
+            "timeout": 30
           }
         ],
-        "description": "Audit console.log in edited files, send desktop notification"
+        "description": "Audit console.log in edited files"
       }
     ],
     "PreCompact": [
       {
-        "matcher": "*",
+        "matcher": ".*",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/session-notes.sh compaction"
+            "command": ".claude/hooks/session-notes.sh compaction",
+            "timeout": 30
           }
         ],
         "description": "Write session notes and inject context before compaction"
       }
     ],
-    "SessionStart": [
+    "Notification": [
       {
-        "matcher": "*",
+        "matcher": "idle_prompt",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/session-start.sh"
+            "command": "notify-send 'Claude Code' 'Waiting for input' 2>/dev/null || true",
+            "timeout": 5
           }
         ],
-        "description": "Check for previous session notes for continuity"
+        "description": "Desktop notification when Claude is waiting for input"
+      },
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'Claude Code' 'Permission needed' 2>/dev/null || true",
+            "timeout": 5
+          }
+        ],
+        "description": "Desktop notification when Claude needs permission"
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-start.sh",
+            "timeout": 10
+          }
+        ],
+        "description": "Load previous session context and set environment"
       }
     ]
   }

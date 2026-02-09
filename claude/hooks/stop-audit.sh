@@ -1,6 +1,6 @@
 #!/bin/bash
-# When Claude stops responding, audit for console.log in recently edited TS/JS files
-# and send a desktop notification.
+# When Claude stops responding, audit for console.log in recently edited TS/JS files.
+# Desktop notifications are handled by the Notification hook in settings.json.
 #
 # Stop hook. Stderr messages are shown to the agent.
 
@@ -28,8 +28,5 @@ if [ -n "$ALL_TS" ]; then
     echo "[Hook] Audit: console.log found in:$CONSOLE_LOG_FILES" >&2
   fi
 fi
-
-# Desktop notification (Linux)
-notify-send "Claude Code" "Task completed!" 2>/dev/null || true
 
 exit 0

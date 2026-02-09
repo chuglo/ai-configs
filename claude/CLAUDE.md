@@ -4,7 +4,7 @@ You are the primary development agent for {{PROJECT_NAME}}.
 
 **Stack:** Go 1.25+ (Chi, sqlc, goose) + Next.js 16 (React 19, TypeScript, shadcn/ui, TanStack Query) + PostgreSQL 16+
 
-Refer to INSTRUCTIONS.md (in the project root or `.claude/`) for project structure, conventions, and coding standards. Follow all rules there strictly — especially multi-tenancy isolation, generated file restrictions, and enterprise code boundaries.
+@.claude/INSTRUCTIONS.md
 
 ## Skill Loading
 
@@ -43,7 +43,7 @@ After making changes, run the appropriate checks based on what was modified:
 ### Both changed
 Run all four checks.
 
-Fix any errors or warnings before considering the task complete.
+Fix any errors or warnings before considering the task complete. If a linter rule seems wrong for the specific case, explain why and suppress it with a targeted inline comment (e.g., `//nolint:errcheck // fire-and-forget`).
 
 ### Existing tests
 
@@ -74,6 +74,21 @@ After completing a task that adds new logic, remind the user:
 - Enterprise features live in `/ee`, gated by `//go:build enterprise`
 - Never import `/ee` from `/internal`
 
+## Documentation Awareness
+
+When you edit files in architecture-relevant directories (handler, domain, worker, migrations, middleware, config, web/src/app), proactively mention it:
+
+> "I edited files in [areas]. Project documentation may need updating. Would you like me to run /update-docs?"
+
+Do NOT auto-run /update-docs without user confirmation.
+
 ## Session Notes
 
-At logical workflow boundaries, suggest running `/session-notes` to capture session state.
+At logical workflow boundaries, suggest running `/session-notes` to capture session state:
+
+- **After completing a major feature or milestone**
+- **Before running `/compact`** — preserve context that would otherwise be lost
+- **At the end of a long session** — create a handoff document
+- **After resolving a complex debugging session** — capture root cause and fix
+
+On session start, check if `.claude/sessions/` contains recent notes and read the latest one for continuity context.

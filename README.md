@@ -179,8 +179,9 @@ Both tools have equivalent hook functionality. OpenCode uses a JS plugin; Claude
 | **Strategic compact** — Suggest compaction at milestones | `tool.execute.before` | `PreToolUse` → `track-activity.sh` |
 | **PR detection** — Log when PRs are created | `tool.execute.after` | `PostToolUse` → `post-bash.sh` |
 | **Console.log audit** — Find leftover debug logs | `event` (session.idle) | `Stop` → `stop-audit.sh` |
-| **Desktop notification** — Notify on task completion | `event` (session.idle) | `Stop` → `stop-audit.sh` |
+| **Desktop notification** — Notify on task completion | `event` (session.idle) | `Notification` → inline notify-send |
 | **Session continuity** — Point to previous session notes | `event` (session.created) | `SessionStart` → `session-start.sh` |
+| **Environment setup** — Persist PROJECT_DIR, GO_MODULE, GIT_BRANCH | N/A (JS state) | `SessionStart` → `session-start.sh` (CLAUDE_ENV_FILE) |
 | **Session notes on compaction** — Rich context injection | `experimental.session.compacting` | `PreCompact` → `session-notes.sh` |
 | **DocWatch** — Detect architecture-relevant edits | `event` (session.idle) | `PreToolUse` → `track-activity.sh` |
 
@@ -192,8 +193,8 @@ Both tools have equivalent hook functionality. OpenCode uses a JS plugin; Claude
 | `git-push-review.sh` | PreToolUse (Bash + git push) | Remind to review diff before pushing |
 | `track-activity.sh` | PreToolUse (*) | Track tool calls, files, suggest compaction |
 | `post-bash.sh` | PostToolUse (Bash) | Detect PR creation from gh CLI output |
-| `stop-audit.sh` | Stop (*) | Audit console.log, desktop notification |
-| `session-start.sh` | SessionStart (*) | Check for previous session notes |
+| `stop-audit.sh` | Stop (*) | Audit console.log in edited TS/JS files |
+| `session-start.sh` | SessionStart (*) | Persist env vars (CLAUDE_ENV_FILE), check for previous session notes |
 | `session-notes.sh` | PreCompact (*) | Write session notes, inject compaction context |
 
 ## Continuous Learning System

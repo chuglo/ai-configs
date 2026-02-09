@@ -41,10 +41,10 @@ orgID := r.URL.Query().Get("org_id")              // NEVER
 
 ### 2. Authentication
 
-**Magic Links**
+**Auth Tokens (passwordless, reset, invite)**
 - [ ] Token generated with `crypto/rand` (not `math/rand` or `math/rand/v2`)
-- [ ] SHA-256 hash stored in DB (not plaintext)
-- [ ] 15-minute expiry enforced
+- [ ] Hash stored in DB (not plaintext token)
+- [ ] Short expiry enforced (e.g., 15 minutes)
 - [ ] Single-use (marked as used after verification)
 - [ ] Constant-time comparison for token validation
 
@@ -138,7 +138,7 @@ json.NewDecoder(r.Body).Decode(&req)
 **Go Backend**
 - [ ] All inputs validated with `go-playground/validator`
 - [ ] SQL queries parameterized via sqlc (no string concatenation)
-- [ ] Markdown sanitized via bluemonday before storage
+- [ ] User-generated HTML/markdown sanitized before storage
 - [ ] UUID inputs parsed and validated (not raw strings to queries)
 - [ ] Content-Type header validated on POST/PUT requests
 
@@ -248,7 +248,7 @@ srv := &http.Server{
 
 - [ ] Rate limiting on all endpoints (httprate)
   - Auth: 5/min per IP
-  - Public submissions: 10/hour per IP
+  - Public endpoints: 10/hour per IP
   - API: 100/min per user
   - Per-tenant rate limiting for multi-tenant (prevent noisy neighbor)
 - [ ] CSRF: SameSite cookies + CSRF token header
@@ -312,7 +312,7 @@ log.Info().Str("event", "rbac_change").Str("target_user", uid).Msg("role changed
 
 ### 10. Audit Logging
 
-- [ ] All state-changing actions logged (OCSF format)
+- [ ] All state-changing actions logged (structured audit events)
 - [ ] Audit events are append-only
 - [ ] No sensitive data in audit events (no passwords, tokens)
 - [ ] Actor, target, and action recorded
@@ -400,7 +400,7 @@ Run with: `go test -fuzz=FuzzValidateTitle -fuzztime=30s`
 - [ ] No hardcoded secrets
 - [ ] All user inputs validated
 - [ ] SQL injection prevention (sqlc only)
-- [ ] XSS prevention (bluemonday + React escaping + CSP)
+- [ ] XSS prevention (HTML sanitization + React escaping + CSP)
 - [ ] CSRF protection
 - [ ] Auth verified on protected routes
 - [ ] RBAC checked

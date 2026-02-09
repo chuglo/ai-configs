@@ -20,7 +20,7 @@ Dispatches two instances of a reviewer agent plus the security reviewer, all in 
 ```
 /review-battle                          # Two go-reviewers + security-reviewer on uncommitted changes
 /review-battle code-reviewer            # Two code-reviewers + security-reviewer on uncommitted changes
-/review-battle go-reviewer internal/handler/report.go  # Scoped to one file
+/review-battle go-reviewer internal/handler/item.go  # Scoped to one file
 ```
 
 ## Workflow

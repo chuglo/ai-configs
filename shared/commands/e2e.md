@@ -9,7 +9,7 @@ Invokes the **e2e-runner** agent.
 ## Critical Flows
 
 1. User registration / sign-up
-2. Login / authentication (magic link, password, OAuth)
+2. Login / authentication (password, SSO, passwordless)
 3. CRUD operations on primary entities
 4. List filtering, sorting, and pagination
 5. File upload and attachment handling

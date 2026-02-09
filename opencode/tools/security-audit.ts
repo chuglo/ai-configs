@@ -245,10 +245,10 @@ async function scanProjectSecurity(
       pattern: /db\.(Query|Exec|QueryRow)\s*\(\s*ctx\s*,\s*"/g,
       name: "Raw SQL query - use sqlc generated queries instead",
     },
-    // Missing bluemonday sanitization on user markdown
+    // Missing HTML sanitization on user markdown
     {
       pattern: /goldmark\.New\(\)\.Convert/g,
-      name: "Markdown rendering without bluemonday sanitization",
+      name: "Markdown rendering without HTML sanitization",
     },
     // File upload without content-type validation
     {
@@ -328,7 +328,7 @@ function generateRecommendations(results: AuditResults): string[] {
     if (check.status === "warning" && check.name.includes("Project")) {
       recommendations.push("Review org_id derivation - must come from middleware.OrgID(ctx), never request body")
       recommendations.push("Ensure all SQL goes through sqlc - no raw db.Query/Exec calls")
-      recommendations.push("Sanitize markdown with bluemonday before rendering")
+      recommendations.push("Sanitize user-generated HTML/markdown before rendering")
       recommendations.push("Validate file upload content-type against allowlist")
     }
 

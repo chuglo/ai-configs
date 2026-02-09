@@ -81,7 +81,7 @@ The filename should be: `SESSION_<YYYY-MM-DD_HH-MM>_<descriptive-name>.md`
 
 - If the user provided a name argument (e.g. `/session-notes security-fixes`), use that as the descriptive name
 - Otherwise, derive a short descriptive name from the work done:
-  - Use the primary domain/feature worked on (e.g. `auth-csrf`, `report-handler`, `frontend-dashboard`)
+  - Use the primary domain/feature worked on (e.g. `auth-csrf`, `api-handler`, `frontend-dashboard`)
   - Keep it to 2-4 words, kebab-case
   - Examples: `security-fixes`, `handler-auth-team`, `plugin-refactor`, `db-migration-roles`
 

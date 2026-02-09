@@ -24,7 +24,7 @@ This document defines coding standards, workflows, and conventions for {{PROJECT
       migrations/              -- goose SQL migrations
     email/                     -- Email provider abstraction
     session/                   -- Session management helpers
-    storage/                   -- Object storage abstraction (S3/MinIO)
+    storage/                   -- Object storage abstraction (S3-compatible)
     middleware/                -- Auth, org context, rate limiting
     worker/                    -- Background job processing
   ee/                          -- Enterprise features (build-tag gated)
@@ -85,7 +85,7 @@ import (
 ### Error Handling
 ```go
 // ALWAYS wrap errors with context
-return fmt.Errorf("get report %s: %w", reportID, err)
+return fmt.Errorf("get item %s: %w", id, err)
 
 // ALWAYS use errors.Is/As for checking
 if errors.Is(err, sql.ErrNoRows) { ... }
@@ -98,7 +98,7 @@ result, _ := doSomething()  // BAD
 ```go
 // Handlers go in internal/handler/, organized by domain
 // Use Chi router, accept context from middleware
-func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetItem(w http.ResponseWriter, r *http.Request) {
     orgID := middleware.OrgID(r.Context())  // From session, never request body
     id := chi.URLParam(r, "id")
     // ...
@@ -120,8 +120,8 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 ### Logging
 ```go
 // Use zerolog, structured JSON
-log.Info().Str("report_id", id).Msg("report created")
-log.Error().Err(err).Str("handler", "GetReport").Msg("failed to fetch report")
+log.Info().Str("item_id", id).Msg("item created")
+log.Error().Err(err).Str("handler", "GetItem").Msg("failed to fetch item")
 ```
 
 ### Naming
@@ -159,7 +159,7 @@ func TestFoo(t *testing.T) {
 | Audience | Route Group | Rendering |
 |----------|-------------|-----------|
 | Public | `/(public)/*` | SSR |
-| Researcher | `/(researcher)/*` | SSR + Client |
+| External users | `/(external)/*` | SSR + Client |
 | Team Dashboard | `/(dashboard)/*` | Client (SPA) |
 
 ### State Management
@@ -198,7 +198,7 @@ func TestFoo(t *testing.T) {
 - [ ] No hardcoded secrets (API keys, passwords, tokens)
 - [ ] All user inputs validated (Go: domain validation, Frontend: `zod`)
 - [ ] SQL injection prevention (sqlc parameterized queries ONLY)
-- [ ] XSS prevention (bluemonday for markdown, React escaping, CSP headers)
+- [ ] XSS prevention (HTML sanitization for user content, React escaping, CSP headers)
 - [ ] CSRF protection (SameSite cookies + CSRF token header)
 - [ ] Authentication verified on protected routes
 - [ ] Authorization checked (RBAC via `domain.HasPermission()`)
@@ -216,7 +216,7 @@ func TestFoo(t *testing.T) {
 <type>(<scope>): <description>
 
 Types: feat, fix, refactor, docs, test, chore, perf, ci
-Scopes: api, web, db, auth, reports, email, worker, docker
+Scopes: api, web, db, auth, email, worker, docker
 ```
 
 ---

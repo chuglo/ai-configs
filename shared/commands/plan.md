@@ -86,7 +86,7 @@ Present a clear summary:
 - Chosen approach and why
 - Ordered list of implementation steps
 - Known risks and mitigations
-- Where the plan was saved (e.g., "Plan saved to `.plans/2026-02-08-report-attachments.md`")
+- Where the plan was saved (e.g., "Plan saved to `.plans/2026-02-08-file-attachments.md`")
 - Ask: "Ready to implement?"
 
 ## When to Use

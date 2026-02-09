@@ -100,6 +100,7 @@ setup_opencode() {
 
     for tool_file in "$SCRIPT_DIR"/opencode/tools/*; do
         cp "$tool_file" "$oc/tools/"
+        replace_placeholders "$oc/tools/$(basename "$tool_file")"
     done
 
     cp "$SCRIPT_DIR/opencode/package.json" "$oc/package.json"

@@ -1,6 +1,10 @@
 ---
 name: verification-loop
-description: Comprehensive verification system for {{PROJECT_NAME}}. Build, type check, lint, test, security scan across Go and Next.js.
+description: Comprehensive verification system for {{PROJECT_NAME}}. Build, type check, lint, test, security scan across Go and Next.js. Use when completing a feature, before creating a PR, after refactoring, or via /verify command.
+disable-model-invocation: true
+allowed-tools: Bash(go *) Bash(golangci-lint *) Bash(npm *) Bash(npx *) Bash(govulncheck *) Bash(gitleaks *) Bash(git diff *)
+argument-hint: "[go|web|both]"
+compatibility: Go 1.25+, Next.js 16, golangci-lint, govulncheck, gitleaks
 ---
 
 # Verification Loop for {{PROJECT_NAME}}

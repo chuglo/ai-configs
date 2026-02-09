@@ -1,6 +1,7 @@
 ---
 name: frontend-patterns
-description: Next.js 16 + React 19 patterns for {{PROJECT_NAME}}. App Router, TanStack Query, shadcn/ui, form handling, SSR vs SPA.
+description: Next.js 16 + React 19 patterns for {{PROJECT_NAME}}. App Router, TanStack Query, shadcn/ui, form handling, SSR vs SPA. Use when writing React components, creating routes, building forms, or working with TanStack Query.
+compatibility: Next.js 16, React 19, TanStack Query, shadcn/ui, Tailwind CSS 4
 ---
 
 # Frontend Patterns for {{PROJECT_NAME}}

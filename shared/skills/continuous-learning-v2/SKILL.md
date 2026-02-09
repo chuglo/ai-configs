@@ -1,7 +1,9 @@
 ---
 name: continuous-learning-v2
-description: Instinct-based learning system that observes sessions, creates atomic instincts with confidence scoring, and evolves them into skills/commands/agents.
-version: 2.0.0
+description: Instinct-based learning system that observes sessions, creates atomic instincts with confidence scoring, and evolves them into skills/commands/agents. Use via /learn, /evolve, /instinct-status, or /instinct-export commands.
+disable-model-invocation: true
+metadata:
+  version: "2.0.0"
 ---
 
 # Continuous Learning v2 - Instinct-Based Architecture

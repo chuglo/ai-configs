@@ -1,6 +1,8 @@
 ---
 name: golang-testing
-description: Go testing patterns for {{PROJECT_NAME}}. Table-driven tests, HTTP handler testing with Chi, sqlc mock patterns, coverage targets, fuzz testing, benchmarks.
+description: Go testing patterns for {{PROJECT_NAME}}. Table-driven tests, HTTP handler testing with Chi, sqlc mock patterns, coverage targets, fuzz testing, benchmarks. Use when writing Go tests, adding coverage, or following TDD workflow.
+allowed-tools: Bash(go test *)
+compatibility: Go 1.25+, testify, go-cmp
 ---
 
 # Go Testing Patterns for {{PROJECT_NAME}}

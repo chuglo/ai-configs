@@ -1,6 +1,6 @@
 ---
 name: strategic-compact
-description: Suggests manual context compaction at logical workflow boundaries rather than relying on arbitrary auto-compaction.
+description: Suggests manual context compaction at logical workflow boundaries rather than relying on arbitrary auto-compaction. Use when context is filling up, between task phases, or before major context shifts.
 ---
 
 # Strategic Compact Skill

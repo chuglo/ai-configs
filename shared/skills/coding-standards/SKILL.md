@@ -1,6 +1,7 @@
 ---
 name: coding-standards
-description: Universal coding standards for {{PROJECT_NAME}}. Go conventions, TypeScript strict mode, API design, file organization, naming philosophy.
+description: Universal coding standards for {{PROJECT_NAME}}. Go conventions, TypeScript strict mode, API design, file organization, naming philosophy. Use when writing new code, reviewing code style, or onboarding to the codebase.
+compatibility: Go 1.25+, Next.js 16, TypeScript strict mode
 ---
 
 # Coding Standards for {{PROJECT_NAME}}

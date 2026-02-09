@@ -1,6 +1,8 @@
 ---
 name: tdd-workflow
-description: TDD methodology for {{PROJECT_NAME}}. Red-Green-Refactor cycle, 80%+ coverage, Go table-driven tests, React Testing Library patterns, fuzz testing.
+description: TDD methodology for {{PROJECT_NAME}}. Red-Green-Refactor cycle, 80%+ coverage, Go table-driven tests, React Testing Library patterns, fuzz testing. Use when writing new features, fixing bugs, or adding test coverage.
+allowed-tools: Bash(go test *) Bash(npx vitest *) Bash(npx playwright *)
+compatibility: Go 1.25+, Vitest, React Testing Library, Playwright
 ---
 
 # TDD Workflow for {{PROJECT_NAME}}

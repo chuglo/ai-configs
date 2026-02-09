@@ -1,6 +1,8 @@
 ---
 name: parallel-worktrees
-description: Git worktree management for parallel multi-agent development. Setup, conventions, conflict avoidance, and merge strategy for running multiple agents on separate features simultaneously.
+description: Git worktree management for parallel multi-agent development. Setup, conventions, conflict avoidance, and merge strategy for running multiple agents on separate features simultaneously. Use via /worktree command or when setting up parallel development.
+disable-model-invocation: true
+argument-hint: "[create|list|remove] [name]"
 ---
 
 # Parallel Worktrees for Multi-Agent Development

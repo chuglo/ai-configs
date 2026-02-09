@@ -1,6 +1,7 @@
 ---
 name: iterative-retrieval
-description: Pattern for progressively refining context retrieval to solve the subagent context problem in {{PROJECT_NAME}}'s Go + Next.js codebase
+description: Pattern for progressively refining context retrieval to solve the subagent context problem in {{PROJECT_NAME}}'s Go + Next.js codebase. Use when a subagent needs to gather codebase context for a task, or when exploring unfamiliar code areas.
+user-invocable: false
 ---
 
 # Iterative Retrieval Pattern

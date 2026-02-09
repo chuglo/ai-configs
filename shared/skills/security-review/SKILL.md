@@ -1,6 +1,8 @@
 ---
 name: security-review
-description: Security checklist for {{PROJECT_NAME}}. Multi-tenant isolation, auth, input validation, OWASP Top 10, file uploads, logging security.
+description: Security checklist for {{PROJECT_NAME}}. Multi-tenant isolation, auth, input validation, OWASP Top 10, file uploads, logging security. Use when implementing auth, handling user input, creating API endpoints, modifying multi-tenant queries, or reviewing code for security.
+allowed-tools: Read Grep Glob
+compatibility: Go 1.25+, Next.js 16, PostgreSQL 16+
 ---
 
 # Security Review for {{PROJECT_NAME}}

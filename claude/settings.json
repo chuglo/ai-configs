@@ -1,0 +1,104 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go build*)",
+      "Bash(go test*)",
+      "Bash(golangci-lint*)",
+      "Bash(gitleaks*)",
+      "Bash(sqlc generate*)",
+      "Bash(npm run build*)",
+      "Bash(npx eslint*)",
+      "Bash(npx vitest*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git stash list*)",
+      "Bash(docker logs*)",
+      "Bash(ls*)"
+    ],
+    "deny": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "tool == \"Edit\" || tool == \"Write\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/protect-generated.sh"
+          }
+        ],
+        "description": "Block edits to sqlc generated files, warn on shadcn/ui edits"
+      },
+      {
+        "matcher": "tool == \"Bash\" && tool_input.command matches \"git push\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/git-push-review.sh"
+          }
+        ],
+        "description": "Remind to review changes before git push"
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/track-activity.sh"
+          }
+        ],
+        "description": "Track tool calls, edited files, and suggest strategic compaction"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "tool == \"Bash\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-bash.sh"
+          }
+        ],
+        "description": "Detect PR creation from gh CLI output"
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/stop-audit.sh"
+          }
+        ],
+        "description": "Audit console.log in edited files, send desktop notification"
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-notes.sh compaction"
+          }
+        ],
+        "description": "Write session notes and inject context before compaction"
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-start.sh"
+          }
+        ],
+        "description": "Check for previous session notes for continuity"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+# Learning system: observations are ephemeral, instincts are valuable
+learning/observations/
+
+# Node modules for plugin
+node_modules/
+
+# Lock file (machine-specific)
+bun.lock
+
+# Build artifacts (from TypeScript compilation)
+*.d.ts
+*.js.map
+
+# Keep plugin and tool source files
+!plugins/**/*.js
+!tools/**/*.ts

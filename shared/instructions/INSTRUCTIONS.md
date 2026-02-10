@@ -292,6 +292,7 @@ npx vitest             # watch mode
 
 | Situation | Agent / Command |
 |-----------|-----------------|
+| Exploring a vague idea | `/brainstorm` |
 | Planning a new feature | `/plan` |
 | Go code review | `/go-review` |
 | General code review | `/code-review` |

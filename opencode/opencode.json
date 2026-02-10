@@ -5,6 +5,10 @@
   "default_agent": "build",
   "instructions": [".opencode/instructions/INSTRUCTIONS.md"],
   "command": {
+    "brainstorm": {
+      "description": "Explore an idea through collaborative dialogue before implementation",
+      "template": "{file:commands/brainstorm.md}\n\n$ARGUMENTS"
+    },
     "plan": {
       "description": "Create a detailed implementation plan for complex features",
       "template": "{file:commands/plan.md}\n\n$ARGUMENTS",

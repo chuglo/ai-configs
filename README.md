@@ -9,8 +9,8 @@ Shared commands, skills, and instructions live in one place. A setup script syml
 ```
 ai_configs/
   shared/
-    commands/          25 slash command markdown files (shared between OpenCode and Claude)
-    skills/            13 skill directories with SKILL.md files
+    commands/          26 slash command markdown files (shared between OpenCode and Claude)
+    skills/            15 skill directories with SKILL.md files
     instructions/      INSTRUCTIONS.md template (coding standards, conventions)
     prompts/           planner.txt (system prompt for planning agent)
   opencode/
@@ -72,10 +72,11 @@ The setup script replaces these placeholders in copied files:
 
 ## Available Commands
 
-All 25 commands work in both OpenCode (`/command`) and Claude Code (`/command`).
+All 26 commands work in both OpenCode (`/command`) and Claude Code (`/command`).
 
 | Command | Description |
 |---|---|
+| `/brainstorm` | Explore an idea through collaborative dialogue before implementation |
 | `/plan` | Create a detailed implementation plan for complex features |
 | `/code-review` | Review code for quality, patterns, and maintainability |
 | `/security` | Run security-focused review (OWASP, auth, tenant isolation) |
@@ -129,6 +130,7 @@ Skills provide domain-specific instructions loaded on demand. In OpenCode they'r
 
 | Skill | Description |
 |---|---|
+| `brainstorming` | Collaborative design exploration — understand intent, explore approaches, validate design incrementally |
 | `coding-standards` | Universal coding standards — Go conventions, TypeScript strict mode, API design, naming |
 | `continuous-learning-v2` | Instinct-based learning system — observations, confidence scoring, evolution into skills |
 | `frontend-design` | Create distinctive, production-grade frontend interfaces with high design quality |
@@ -147,8 +149,8 @@ Skills provide domain-specific instructions loaded on demand. In OpenCode they'r
 
 | Feature | OpenCode | Claude Code |
 |---|---|---|
-| Commands (25) | `/command` via opencode.json | `/command` via commands/ directory |
-| Skills (13) | Loaded via skill loader MCP tool | Agent reads SKILL.md files directly |
+| Commands (26) | `/command` via opencode.json | `/command` via commands/ directory |
+| Skills (15) | Loaded via skill loader MCP tool | Agent reads SKILL.md files directly |
 | Agents (14) | Agent definitions in agents/ | N/A — single agent with CLAUDE.md config |
 | Plugin hooks | JS plugin (`hooks.js`) | Shell hooks in `hooks/` + `settings.json` config |
 | Custom tools | 3 TypeScript tools (check-coverage, run-tests, security-audit) | N/A — use bash commands directly |

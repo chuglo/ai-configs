@@ -117,6 +117,24 @@ detected. Use this to capture decision rationale in documentation:
 
 Pay special attention to ROADMAP.md phase status. When updating:
 
+#### User Check-In (before ROADMAP changes)
+
+Before making ROADMAP updates, **ask the user** about current project status. Git
+history shows what was *done*, but only the user knows what's *planned*. Prompt:
+
+> "Before I update project tracking, any changes to share?
+> - Work currently in progress?
+> - Items to defer, cut, or reprioritize?
+> - New work items not yet in the ROADMAP?
+> - Scope changes or priority shifts?
+>
+> (Say 'just sync from git' if no changes -- I'll reconcile from code history.)"
+
+Incorporate the user's response into your ROADMAP updates. If they say "just sync"
+or equivalent, proceed with git-based inference only.
+
+#### Phase Status Updates
+
 - Check if all items in a phase are complete -> mark phase as COMPLETE with date
 - Check if items were moved between phases -> add deferral/promotion notes
 - Check if exit criteria are now met -> update exit criteria checklist

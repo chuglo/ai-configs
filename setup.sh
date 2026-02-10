@@ -52,11 +52,22 @@ replace_placeholders() {
 }
 
 # Helper: create symlink (relative)
+# Handles the case where target already exists as a real directory —
+# ln -sfn would create the symlink *inside* the directory instead of
+# replacing it. We remove the existing directory first.
 make_link() {
     local source="$1"
     local target="$2"
     local rel_source
     rel_source="$(python3 -c "import os.path; print(os.path.relpath('$source', os.path.dirname('$target')))")"
+
+    # If target exists as a real directory (not a symlink), remove it first.
+    # Without this, ln -sfn creates a symlink inside the directory instead
+    # of replacing it (e.g., commands/commands instead of commands -> ...).
+    if [[ -d "$target" && ! -L "$target" ]]; then
+        rm -rf "$target"
+    fi
+
     ln -sfn "$rel_source" "$target"
 }
 
